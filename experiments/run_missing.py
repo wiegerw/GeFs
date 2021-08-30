@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 import gc
 from tqdm import tqdm
