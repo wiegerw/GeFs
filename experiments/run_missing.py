@@ -20,6 +20,8 @@ from prep import get_data, learncats, get_stats, normalize_data, standardize_dat
 from knn_imputer import KNNImputer
 from simple_imputer import SimpleImputer
 from miss_forest import MissForest
+from gefs.cgef import DataSet, RandomForestClassifier
+from cgeflib import build_generative_forest
 
 
 # Auxiliary functions
@@ -141,6 +143,28 @@ if __name__ == '__main__':
                 print('            Converting to GeF')
                 gef = rf.topc()
                 gef.maxv, gef.minv = maxv, minv
+
+##################################################################################################
+                print('            Training (cgef)')
+                D_train = DataSet()
+                D_train.from_numpy(train_data, ncat)
+                D_test = DataSet()
+                D_test.from_numpy(test_data, ncat)
+                classifier = RandomForestClassifier(n_estimators=FLAGS.n_estimators,
+                                                    min_samples_leaf=min_samples_leaf,
+                                                    max_depth=1000,
+                                                    criterion="gini",
+                                                    sample_fraction=1,
+                                                    sample_technique="stratified",
+                                                    execution_mode="parallel",
+                                                    split_family="threshold-subset"
+                                                   )
+                rf_train = classifier.fit(D_train, seed=12345)
+
+                print('            Converting to GeF (cgef)')
+                pc_train = build_generative_forest(rf_train, D_train)
+
+##################################################################################################
 
                 if FLAGS.lspn:
                     print('            Converting to GeF(LSPN)')
